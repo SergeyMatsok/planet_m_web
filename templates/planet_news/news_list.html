@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Новости — Название группы{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">📰 Новости</h1>
+
+{% if posts %}
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="text-muted small">
+                        <i class="bi bi-calendar"></i> 
+                        {{ post.published_date|date:"d.m.Y" }}
+                    </p>
+                    <p class="card-text">{{ post.content|truncatewords:30 }}</p>
+                    <a href="{% url 'news_detail' post.slug %}" class="btn btn-primary">Читать далее →</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="">Новостей пока нет.</p>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3">← Вернуться на главную</a>
+{% endblock %}

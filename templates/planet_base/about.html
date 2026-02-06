@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}О группе — Название группы{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">О группе</h1>
+
+{% if band_info %}
+<div class="row mb-5">
+    <div class="col-md-8">
+        <h2>{{ band_info.title }}</h2>
+        <p class="lead">{{ band_info.description }}</p>
+        <p><strong>Год основания:</strong> {{ band_info.founded_year }}</p>
+    </div>
+    <div class="col-md-4">
+        {% if band_info.logo %}
+        <img src="{{ band_info.logo.url }}" alt="Логотип {{ band_info.title }}" class="img-fluid rounded">
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<h2 class="mb-4">Состав группы</h2>
+
+{% if members %}
+<div class="row">
+    {% for member in members %}
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            {% if member.photo %}
+            <img src="{{ member.photo.url }}" class="card-img-top" alt="{{ member.name }}">
+            {% else %}
+            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="display-6">?</span>
+            </div>
+            {% endif %}
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ member.name }}</h5>
+                <p class="card-text">{{ member.role }}</p>
+                {% if member.bio %}
+                <p class="card-text small">{{ member.bio|truncatewords:15 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Информация о составе группы пока не добавлена.</p>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3">← Вернуться на главную</a>
+{% endblock %}

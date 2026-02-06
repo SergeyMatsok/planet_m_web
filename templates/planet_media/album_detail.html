@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ album.title }} — Фотогалерея{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'gallery' %}" class="btn btn-outline-secondary">
+        ← Все альбомы
+    </a>
+</div>
+
+<h1 class="mb-3">{{ album.title }}</h1>
+
+{% if album.description %}
+<p class="lead">{{ album.description }}</p>
+{% endif %}
+
+<p class="text-muted mb-4">
+    📷 Всего {{ album.get_photo_count }} фотографий
+</p>
+
+{% if photos %}
+    <div class="row g-3">
+        {% for photo in photos %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}" data-photo-id="{{ photo.id }}">
+                    <img src="{{ photo.image.url }}" class="card-img-top" alt="{{ photo.title }}" style="height: 250px; object-fit: cover; cursor: pointer;">
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if photo.title %}
+                        <span class="text-muted">Планета М</span>
+                        {% else %}
+                            <span class="text-muted">Без названия</span>
+                        {% endif %}
+                    </h5>
+                    {% if photo.description %}
+                    <p class="card-text small text-muted">{{ photo.description|truncatewords:15 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно для фото -->
+        <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-md-down">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {% if photo.title %}
+                            <span class="text-muted">Планета М</span>
+                            {% else %}
+                                Фотография {{ forloop.counter }}
+                            {% endif %}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="{{ photo.image.url }}" class="img-fluid" alt="{{ photo.title }}">
+                        {% if photo.description %}
+                        <p class="mt-3">{{ photo.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" id="prevBtn{{ photo.id }}">
+                            ← Предыдущее
+                        </button>
+                        <span class="text-muted" id="counter{{ photo.id }}"></span>
+                        <button type="button" class="btn btn-outline-secondary" id="nextBtn{{ photo.id }}">
+                            Следующее →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">В этом альбоме пока нет фотографий.</div>
+{% endif %}
+
+<a href="{% url 'gallery' %}" class="btn btn-outline-secondary mt-3">← Все альбомы</a>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Подключаем скрипт галереи -->
+<script src="{% static 'js/gallery.js' %}"></script>
+
+<!-- Инициализируем галерею с данными -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photos = [
+        {% for photo in photos %}
+        {
+            id: {{ photo.id }},
+            title: "{{ photo.title|escapejs }}",
+            image: "{{ photo.image.url }}",
+            description: "{{ photo.description|escapejs }}"
+        },
+        {% endfor %}
+    ];
+    
+    // Инициализируем галерею
+    initGallery(photos);
+});
+</script>
+{% endblock %}

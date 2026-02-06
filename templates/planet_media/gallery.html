@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Фотогалерея — Планета М{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">📸 Фотогалерея</h1>
+
+<!-- Кнопка загрузки -->
+{% if user.is_authenticated %}
+<div class="mb-4">
+    <a href="{% url 'upload_multiple' %}" class="btn btn-success">
+        📤 Загрузить несколько фото
+    </a>
+</div>
+{% endif %}
+
+<!-- Альбомы -->
+{% if albums %}
+    <h2 class="mb-4">Альбомы</h2>
+    <div class="row g-4">
+        {% for album in albums %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100 album-card">
+                {% if album.cover_image %}
+                    <a href="{% url 'album_detail' album.slug %}">
+                        <img src="{{ album.cover_image.url }}" class="card-img-top" alt="{{ album.title }}" style="height: 250px; object-fit: cover;">
+                    </a>
+                {% elif album.photos.first %}
+                    <a href="{% url 'album_detail' album.slug %}">
+                        <img src="{{ album.photos.first.image.url }}" class="card-img-top" alt="{{ album.title }}" style="height: 250px; object-fit: cover;">
+                    </a>
+                {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <span class="display-4 text-muted">?</span>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'album_detail' album.slug %}" class="text-white text-decoration-none">
+                            {{ album.title }}
+                        </a>
+                    </h5>
+                    {% if album.description %}
+                    <p class="card-text small text-muted">{{ album.description|truncatewords:10 }}</p>
+                    {% endif %}
+                    <p class="card-text">
+                        <small class="text-muted">
+                            📷 {{ album.get_photo_count }} фото
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Фото без альбома -->
+{% if orphan_photos %}
+    <h2 class="mb-4 mt-5">Отдельные фотографии</h2>
+    <div class="row g-3">
+        {% for photo in orphan_photos %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}" data-photo-id="{{ photo.id }}">
+                    <img src="{{ photo.image.url }}" class="card-img-top" alt="{{ photo.title }}" style="height: 250px; object-fit: cover; cursor: pointer;">
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if photo.title %}
+                            {{ photo.title }}
+                        {% else %}
+                            <span class="text-muted">Без названия</span>
+                        {% endif %}
+                    </h5>
+                    {% if photo.description %}
+                    <p class="card-text small text-muted">{{ photo.description|truncatewords:15 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно для фото -->
+        <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-md-down">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {% if photo.title %}
+                                {{ photo.title }}
+                            {% else %}
+                                Фотография {{ forloop.counter }}
+                            {% endif %}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="{{ photo.image.url }}" class="img-fluid" alt="{{ photo.title }}">
+                        {% if photo.description %}
+                        <p class="mt-3">{{ photo.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" id="prevBtn{{ photo.id }}">
+                            ← Предыдущее
+                        </button>
+                        <span class="text-muted" id="counter{{ photo.id }}"></span>
+                        <button type="button" class="btn btn-outline-secondary" id="nextBtn{{ photo.id }}">
+                            Следующее →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if not albums and not orphan_photos %}
+    <div class="alert alert-info">Фотографий пока нет.</div>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3">← Вернуться на главную</a>
+{% endblock %}
+{% block extra_js %}
+<!-- Подключаем скрипт галереи -->
+<script src="{% static 'js/gallery.js' %}"></script>
+
+<!-- Инициализируем галерею с данными -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photos = [
+        {% for photo in orphan_photos %}
+        {
+            id: {{ photo.id }},
+            title: "{{ photo.title|escapejs }}",
+            image: "{{ photo.image.url }}",
+            description: "{{ photo.description|escapejs }}"
+        },
+        {% endfor %}
+    ];
+    
+    // Инициализируем галерею
+    initGallery(photos);
+});
+</script>
+{% endblock %}

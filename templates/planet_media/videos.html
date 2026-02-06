@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Видео — Название группы{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">🎬 Видео</h1>
+
+{% if videos %}
+    {% for video in videos %}
+    <div class="card mb-4">
+        <div class="ratio ratio-16x9">
+            <iframe 
+                src="{{ video.get_embed_url }}" 
+                title="{{ video.title }}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ video.title }}</h5>
+            {% if video.description %}
+            <div class="collapse" id="collapse{{ video.id }}">
+                <p class="card-text">{{ video.description }}</p>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ video.id }}">
+                <span class="collapse-toggle-text">Показать описание</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">Видео пока нет.</div>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3">← Вернуться на главную</a>
+{% endblock %}
