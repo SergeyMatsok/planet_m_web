@@ -247,3 +247,55 @@ img {
     text-decoration: underline !important;
 }
 
+/* Анимация вращающейся планеты */
+.planet-rotate {
+    animation: spin 50s linear infinite;
+    transform-origin: center;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Для плавного вращения с орбитой (опционально) */
+.planet-orbit {
+    position: relative;
+    display: inline-block;
+}
+
+.planet-orbit::before {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: orbit 100s linear infinite;
+}
+
+@keyframes orbit {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Планета с кольцами (для более реалистичного вида) */
+.planet-with-rings {
+    position: relative;
+}
+
+.planet-with-rings::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+}

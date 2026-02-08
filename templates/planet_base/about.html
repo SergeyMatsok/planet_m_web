@@ -13,9 +13,13 @@
         <p class="lead">{{ band_info.description }}</p>
         <p><strong>Год основания:</strong> {{ band_info.founded_year }}</p>
     </div>
+    
     <div class="col-md-4">
         {% if band_info.logo %}
-        <img src="{{ band_info.logo.url }}" alt="Логотип {{ band_info.title }}" class="img-fluid rounded">
+    <img src="{{ band_info.logo.url }}" 
+         class="img-fluid rounded planet-rotate"
+         style="max-width: 250px;">
+        <!-- <img src="{{ band_info.logo.url }}" alt="Логотип {{ band_info.title }}" class="img-fluid rounded"> -->
         {% endif %}
     </div>
 </div>
