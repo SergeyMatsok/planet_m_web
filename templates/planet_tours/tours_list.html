@@ -22,7 +22,7 @@
                             <strong>📍 {{ concert.venue }}</strong>, {{ concert.city }}
                         </p>
                         {% if concert.address %}
-                        <p class="mb-1 text-muted">{{ concert.address }}</p>
+                        <p class="mb-1 ">{{ concert.address }}</p>
                         {% endif %}
                         {% if concert.description %}
                         <p class="mb-2">{{ concert.description|truncatewords:20 }}</p>
@@ -51,7 +51,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">{{ concert.title }}</h5>
-                        <p class="card-text text-muted">
+                        <p class="card-text">
                             {{ concert.date|date:"d.m.Y" }} | {{ concert.city }}
                         </p>
                         <p class="card-text">{{ concert.venue }}</p>
