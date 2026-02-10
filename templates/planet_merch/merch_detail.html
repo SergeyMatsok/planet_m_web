@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.title }} — Мерч{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'merch_list' %}" class="btn btn-outline-secondary">
+            ← Все товары
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Фото товара -->
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="position-relative">
+                {% if item.is_new %}
+                <span class="badge bg-success position-absolute top-0 start-0 m-2">Новинка</span>
+                {% endif %}
+                {% if item.get_discount_percent > 0 %}
+                <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                    -{{ item.get_discount_percent }}%
+                </span>
+                {% endif %}
+                <img src="{{ item.image.url }}" class="img-fluid rounded" alt="{{ item.title }}">
+            </div>
+            
+            {% if item.additional_images.exists %}
+            <div class="row mt-3">
+                {% for img in item.additional_images.all %}
+                <div class="col-3">
+                    <img src="{{ img.image.url }}" class="img-fluid rounded" alt="{{ img.alt_text }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Информация о товаре -->
+        <div class="col-md-6">
+            <h1>{{ item.title }}</h1>
+            
+            <div class="d-flex align-items-baseline mb-3">
+                {% if item.old_price and item.old_price > item.price %}
+                <span class="text-muted text-decoration-line-through me-2 fs-3">
+                    {{ item.old_price }} ₽
+                </span>
+                {% endif %}
+                <span class="fs-1 fw-bold text-white">
+                    {{ item.price }} ₽
+                </span>
+            </div>
+            
+            <p class="lead">{{ item.description }}</p>
+            
+            <div class="mb-3">
+                <strong>Категория:</strong> 
+                {% if item.category == 'clothing' %}Одежда{% endif %}
+                {% if item.category == 'accessories' %}Аксессуары{% endif %}
+                {% if item.category == 'vinyl' %}Винил{% endif %}
+                {% if item.category == 'cd' %}CD{% endif %}
+                {% if item.category == 'other' %}Другое{% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <strong>Статус:</strong>
+                {% if item.status == 'in_stock' %}
+                <span class="badge bg-success">В наличии</span>
+                {% elif item.status == 'low_stock' %}
+                <span class="badge bg-warning text-dark">Мало на складе</span>
+                {% elif item.status == 'out_of_stock' %}
+                <span class="badge bg-danger">Нет в наличии</span>
+                {% elif item.status == 'pre_order' %}
+                <span class="badge bg-info text-dark">Предзаказ</span>
+                {% endif %}
+                
+                {% if item.stock_quantity > 0 %}
+                <span class="ms-2">Осталось: {{ item.stock_quantity }} шт.</span>
+                {% endif %}
+            </div>
+            
+<!-- Замените блок с кнопкой на этот код -->
+
+<!-- Кнопка открытия модального окна заказа -->
+<div class="mb-4">
+    {% if item.status == 'in_stock' or item.status == 'low_stock' or item.status == 'pre_order' %}
+        <button type="button" class="btn btn-success btn-lg w-100" data-bs-toggle="modal" data-bs-target="#orderModal">
+            🛒 Купить 
+        </button>
+    {% else %}
+        <button class="btn btn-secondary btn-lg w-100" disabled>
+            Нет в наличии
+        </button>
+    {% endif %}
+</div>
+
+<!-- Модальное окно заказа -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Оформить заказ: {{ item.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="orderForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Имя *</label>
+                        {{ order_form.customer_name }}
+                        {% if order_form.customer_name.errors %}
+                        <div class="text-danger">{{ order_form.customer_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            {{ order_form.customer_email }}
+                            {% if order_form.customer_email.errors %}
+                            <div class="text-danger">{{ order_form.customer_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Телефон *</label>
+                            {{ order_form.customer_phone }}
+                            {% if order_form.customer_phone.errors %}
+                            <div class="text-danger">{{ order_form.customer_phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Адрес доставки *</label>
+                        {{ order_form.customer_address }}
+                        {% if order_form.customer_address.errors %}
+                        <div class="text-danger">{{ order_form.customer_address.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Количество *</label>
+                            {{ order_form.quantity }}
+                            {% if order_form.quantity.errors %}
+                            <div class="text-danger">{{ order_form.quantity.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Итого</label>
+                            <div class="form-control bg-secondary text-white">
+                                <strong id="totalPrice">{{ item.price }} ₽</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Комментарий</label>
+                        {{ order_form.notes }}
+                        {% if order_form.notes.errors %}
+                        <div class="text-danger">{{ order_form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>ℹ️ Важно:</strong><br>
+                        После оформления заказа мы свяжемся с вами для подтверждения и уточнения деталей доставки.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" form="orderForm" class="btn btn-success">
+                    📦 Оформить заказ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для расчёта итоговой суммы -->
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const quantityInput = document.querySelector('#id_quantity');
+                const price = {{ item.price }};
+                const totalPriceEl = document.querySelector('#totalPrice');
+                
+                function updateTotal() {
+                    const quantity = parseInt(quantityInput.value) || 1;
+                    const total = price * quantity;
+                    totalPriceEl.textContent = total.toLocaleString('ru-RU') + ' ₽';
+                }
+                
+                quantityInput.addEventListener('input', updateTotal);
+                updateTotal();
+            });
+            </script>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ Как заказать:</strong><br>
+                Напишите нам в соцсетях или на почту для оформления заказа.
+            </div>
+        </div>
+    </div>
+
+    <!-- Похожие товары -->
+    {% if related_items %}
+    <div class="mt-5">
+        <h2 class="mb-3">Похожие товары</h2>
+        <div class="row g-4">
+            {% for related in related_items %}
+            <div class="col-md-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ related.title }}</h5>
+                        <p class="card-text">
+                            <strong>{{ related.price }} ₽</strong>
+                        </p>
+                        <a href="{% url 'merch_detail' related.slug %}" class="btn btn-outline-primary">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
