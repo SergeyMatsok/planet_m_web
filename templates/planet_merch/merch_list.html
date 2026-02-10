@@ -35,71 +35,25 @@
         </div>
     </div>
 
-    <!-- Рекомендуемые товары -->
-    {% if featured_items %}
-    <div class="mb-5">
-        <h2 class="mb-3">🔥 Рекомендуем</h2>
-        <div class="row g-4">
-            {% for item in featured_items %}
-            <div class="col-md-3">
-                <div class="card h-100 bg-dark border-secondary">
-                    <div class="position-relative">
-                        {% if item.is_new %}
-                        <span class="badge bg-success position-absolute top-0 start-0 m-2">Новинка</span>
-                        {% endif %}
-                        {% if item.get_discount_percent > 0 %}
-                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">
-                            -{{ item.get_discount_percent }}%
-                        </span>
-                        {% endif %}
-                        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 250px; object-fit: cover;">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item.title }}</h5>
-                        <p class="card-text text-muted small">{{ item.description|truncatewords:10 }}</p>
-                        
-                        <div class="d-flex align-items-baseline mb-2">
-                            {% if item.old_price and item.old_price > item.price %}
-                            <span class="text-muted text-decoration-line-through me-2">
-                                {{ item.old_price }} ₽
-                            </span>
-                            {% endif %}
-                            <span class="fs-4 fw-bold text-white">
-                                {{ item.price }} ₽
-                            </span>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <a href="{% url 'merch_detail' item.slug %}" class="btn btn-primary">
-                                Подробнее
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
 
-    <!-- Все товары -->
-    <h2 class="mb-4">📦 Весь мерч</h2>
-
-    {% if items %}
+<!-- Рекомендуемые товары -->
+{% if featured_items %}
+<div class="mb-5">
+    <h2 class="mb-3">🔥 Рекомендуем</h2>
     <div class="row g-4">
-        {% for item in items %}
-        <div class="col-md-4 col-sm-6">
-            <div class="card h-100 bg-dark border-secondary">
+        {% for item in featured_items %}
+        <div class="col-md-3">
+            <div class="card h-100 bg-dark border-secondary merch-card">  <!-- ДОБАВЛЕН КЛАСС merch-card -->
                 <div class="position-relative">
                     {% if item.is_new %}
-                    <span class="badge bg-success position-absolute top-0 start-0 m-2">Новинка</span>
+                    <span class="badge bg-success merch-badge position-absolute top-0 start-0 m-2">Новинка</span>
                     {% endif %}
                     {% if item.get_discount_percent > 0 %}
-                    <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-danger merch-badge position-absolute top-0 end-0 m-2">
                         -{{ item.get_discount_percent }}%
                     </span>
                     {% endif %}
-                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 250px; object-fit: cover;">
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">{{ item.title }}</h5>
@@ -117,7 +71,7 @@
                     </div>
                     
                     <div class="d-grid">
-                        <a href="{% url 'merch_detail' item.slug %}" class="btn btn-outline-primary">
+                        <a href="{% url 'merch_detail' item.slug %}" class="btn btn-primary">
                             Подробнее
                         </a>
                     </div>
@@ -126,14 +80,60 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
-    <div class="alert alert-info">
-        {% if selected_category %}
-        В этой категории пока нет товаров.
-        {% else %}
-        Мерч временно отсутствует. Следите за обновлениями!
-        {% endif %}
+</div>
+{% endif %}
+
+<!-- Все товары -->
+<h2 class="mb-4">📦 Весь мерч</h2>
+
+{% if items %}
+<div class="row g-4">
+    {% for item in items %}
+    <div class="col-md-4 col-sm-6">
+        <div class="card h-100 bg-dark border-secondary merch-card">  <!-- ДОБАВЛЕН КЛАСС merch-card -->
+            <div class="position-relative">
+                {% if item.is_new %}
+                <span class="badge bg-success merch-badge position-absolute top-0 start-0 m-2">Новинка</span>
+                {% endif %}
+                {% if item.get_discount_percent > 0 %}
+                <span class="badge bg-danger merch-badge position-absolute top-0 end-0 m-2">
+                    -{{ item.get_discount_percent }}%
+                </span>
+                {% endif %}
+                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ item.title }}</h5>
+                <p class="card-text text-muted small">{{ item.description|truncatewords:10 }}</p>
+                
+                <div class="d-flex align-items-baseline mb-2">
+                    {% if item.old_price and item.old_price > item.price %}
+                    <span class="text-muted text-decoration-line-through me-2">
+                        {{ item.old_price }} ₽
+                    </span>
+                    {% endif %}
+                    <span class="fs-4 fw-bold text-white">
+                        {{ item.price }} ₽
+                    </span>
+                </div>
+                
+                <div class="d-grid">
+                    <a href="{% url 'merch_detail' item.slug %}" class="btn btn-outline-primary">
+                        Подробнее
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    {% if selected_category %}
+    В этой категории пока нет товаров.
+    {% else %}
+    Мерч временно отсутствует. Следите за обновлениями!
     {% endif %}
 </div>
-{% endblock %}
+{% endif %}
+{% endblock content %}

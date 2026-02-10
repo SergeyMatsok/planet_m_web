@@ -80,7 +80,6 @@
                 {% endif %}
             </div>
             
-<!-- Замените блок с кнопкой на этот код -->
 
 <!-- Кнопка открытия модального окна заказа -->
 <div class="mb-4">
@@ -205,29 +204,29 @@
         </div>
     </div>
 
-    <!-- Похожие товары -->
-    {% if related_items %}
-    <div class="mt-5">
-        <h2 class="mb-3">Похожие товары</h2>
-        <div class="row g-4">
-            {% for related in related_items %}
-            <div class="col-md-3">
-                <div class="card h-100 bg-dark border-secondary">
-                    <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ related.title }}</h5>
-                        <p class="card-text">
-                            <strong>{{ related.price }} ₽</strong>
-                        </p>
-                        <a href="{% url 'merch_detail' related.slug %}" class="btn btn-outline-primary">
-                            Подробнее
-                        </a>
-                    </div>
+<!-- Похожие товары -->
+{% if related_items %}
+<div class="mt-5">
+    <h2 class="mb-3">Похожие товары</h2>
+    <div class="row g-4">
+        {% for related in related_items %}
+        <div class="col-md-3">
+            <div class="card h-100 bg-dark border-secondary merch-card">  <!-- ДОБАВЛЕН КЛАСС merch-card -->
+                <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ related.title }}</h5>
+                    <p class="card-text">
+                        <strong>{{ related.price }} ₽</strong>
+                    </p>
+                    <a href="{% url 'merch_detail' related.slug %}" class="btn btn-outline-primary">
+                        Подробнее
+                    </a>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
-    {% endif %}
+</div>
+{% endif %}
 </div>
 {% endblock %}
