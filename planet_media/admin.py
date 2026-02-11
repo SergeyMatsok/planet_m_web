@@ -39,5 +39,19 @@ class PhotoAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ['title', 'order']
+    list_display = ['title', 'get_platform_display', 'order']
     list_editable = ['order']
+    search_fields = ['title', 'description']
+    
+    def get_platform_display(self, obj):
+        if obj.video_file:
+            return '📁 Загружено'
+        elif obj.youtube_url:
+            if 'youtube' in obj.youtube_url:
+                return '📺 YouTube'
+            elif 'vk.com' in obj.youtube_url:
+                return '📺 ВКонтакте'
+            else:
+                return '🔗 Ссылка'
+        return '—'
+    get_platform_display.short_description = 'Источник'

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'planet_media',
     'planet_tours',
     'planet_merch',
+    'planet_forum',
 ]
 
 MIDDLEWARE = [

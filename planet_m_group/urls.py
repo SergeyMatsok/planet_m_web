@@ -10,6 +10,7 @@ urlpatterns = [
     path('tours/', include('planet_tours.urls')),
     path('media/', include('planet_media.urls')),
     path('merch/', include('planet_merch.urls')),
+    path('forum/', include('planet_forum.urls')),
 ]
 
 # Для отладки — раздача медиафайлов

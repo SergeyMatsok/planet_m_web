@@ -1,7 +1,6 @@
 from django.db import models
-from django.db import models
 from django.utils import timezone
-
+from django.core.validators import FileExtensionValidator  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
 
 class Album(models.Model):
     """Альбом фотографий"""
@@ -54,13 +53,27 @@ class Photo(models.Model):
         return self.title or f"Фото {self.id}"
 
 
+
 class Video(models.Model):
-    """Видео (клип, промо)"""
+    """Видео"""
     title = models.CharField(max_length=200, verbose_name="Название")
-    youtube_url = models.URLField(verbose_name="Ссылка на YouTube")
+    
+    # Ссылка на внешнее видео (YouTube, VK)
+    youtube_url = models.URLField(blank=True, verbose_name="Ссылка на видео")
+    
+    # НОВОЕ ПОЛЕ: загрузка видеофайла
+    video_file = models.FileField(
+        upload_to='videos/',
+        blank=True,
+        null=True,
+        verbose_name="Видеофайл (MP4)",
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov', 'avi', 'webm'])],
+        help_text="Загрузите видео в формате MP4 (рекомендуется)"
+    )
+    
     description = models.TextField(blank=True, verbose_name="Описание")
-    thumbnail = models.ImageField(upload_to='videos/', blank=True, null=True)
-    order = models.IntegerField(default=0)
+    thumbnail = models.ImageField(upload_to='videos/', blank=True, null=True, verbose_name="Превью")
+    order = models.IntegerField(default=0, verbose_name="Порядок")
     
     class Meta:
         ordering = ['order']
@@ -71,11 +84,23 @@ class Video(models.Model):
         return self.title
     
     def get_embed_url(self):
-        """Преобразует обычную ссылку в embed-ссылку для вставки"""
+        """Преобразует ссылку в embed-ссылку для вставки"""
         if 'youtube.com/watch' in self.youtube_url:
             video_id = self.youtube_url.split('v=')[1].split('&')[0]
             return f'https://www.youtube.com/embed/{video_id}'
         elif 'youtu.be/' in self.youtube_url:
             video_id = self.youtube_url.split('youtu.be/')[1].split('?')[0]
             return f'https://www.youtube.com/embed/{video_id}'
+        elif 'vk.com/video' in self.youtube_url:
+            return self.youtube_url  # ВКонтакте требует специальной обработки
         return self.youtube_url
+    
+    def get_video_platform(self):
+        """Определяет платформу видео"""
+        if self.video_file:
+            return 'upload'
+        elif 'youtube.com' in self.youtube_url or 'youtu.be' in self.youtube_url:
+            return 'youtube'
+        elif 'vk.com' in self.youtube_url:
+            return 'vk'
+        return 'unknown'

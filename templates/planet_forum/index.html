@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Форум — Планета М{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">💬 Форум</h1>
+        {% if user.is_authenticated %}
+        <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#newQuestionForm">
+            ➕ Задать вопрос
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Форма для нового вопроса -->
+    {% if user.is_authenticated %}
+    <div class="collapse mb-4" id="newQuestionForm">
+        <div class="card bg-dark border-secondary">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Новый вопрос</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                        <div class="text-danger">{{ form.content.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            📤 Опубликовать вопрос
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Сообщения форума -->
+    {% if page_obj %}
+    <div class="forum-thread">
+        {% for post in page_obj %}
+        <div class="card bg-dark border-secondary mb-3" id="post-{{ post.id }}">
+            <div class="card-body">
+                <!-- Заголовок вопроса -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <strong class="text-white">{{ post.author.username }}</strong>
+                        <small class="text-muted ms-2">
+                            {{ post.created_at|date:"d.m.Y в H:i" }}
+                        </small>
+                    </div>
+                    <div>
+                        <a href="#post-{{ post.id }}" class="text-muted">
+                            <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Текст вопроса -->
+                <div class="mb-3">
+                    <p class="card-text">{{ post.content|linebreaks }}</p>
+                </div>
+                
+                <!-- Кнопки действий -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2">
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-outline-primary" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#replyForm{{ post.id }}">
+                            💬 Ответить
+                        </button>
+                        {% endif %}
+                        
+                        <form method="post" action="{% url 'forum_like_post' post.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                ❤️ {{ post.get_like_count }}
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <small class="text-muted">
+                        {{ post.get_replies_count }} ответов
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Форма ответа -->
+            {% if user.is_authenticated %}
+            <div class="collapse mx-4 mb-3" id="replyForm{{ post.id }}">
+                <div class="card bg-secondary">
+                    <div class="card-body">
+                        <form method="post" action="{% url 'forum_add_reply' post.id %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <textarea name="content" class="form-control" 
+                                          placeholder="Ваш ответ..." 
+                                          rows="2" required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    📤 Отправить ответ
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Ответы -->
+            {% if post.replies.exists %}
+            <div class="list-group list-group-flush">
+                {% for reply in post.replies.all %}
+                <div class="list-group-item bg-dark border-secondary" style="padding-left: {{ reply.get_depth|add:2 }}rem;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong class="text-white">{{ reply.author.username }}</strong>
+                            <small class="text-muted ms-2">
+                                {{ reply.created_at|date:"d.m.Y в H:i" }}
+                            </small>
+                        </div>
+                        <div>
+                            <a href="#post-{{ reply.id }}" class="text-muted">
+                                <i class="bi bi-link-45deg"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <p class="mb-2 mt-1">{{ reply.content|linebreaks }}</p>
+                    
+                    {% if user.is_authenticated %}
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#replyForm{{ reply.id }}">
+                            💬 Ответить
+                        </button>
+                        
+                        <form method="post" action="{% url 'forum_like_post' reply.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if user in reply.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                ❤️ {{ reply.get_like_count }}
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Форма ответа на ответ -->
+                    <div class="collapse mt-2" id="replyForm{{ reply.id }}">
+                        <form method="post" action="{% url 'forum_add_reply' reply.id %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <textarea name="content" class="form-control" 
+                                          placeholder="Ваш ответ..." 
+                                          rows="2" required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    📤 Отправить
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Страницы форума">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info">
+        Пока нет вопросов. Будьте первым!
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.forum-thread {
+    max-width: 100%;
+}
+
+.list-group-item {
+    border-left: 3px solid #1abc9c;
+    margin-left: 1rem;
+}
+
+.btn-outline-primary:hover {
+    background-color: #1abc9c;
+    border-color: #1abc9c;
+}
+
+.btn-outline-danger:hover {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+</style>
+{% endblock %}
